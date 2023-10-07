@@ -6,7 +6,7 @@ Clone repositories
 cd $HOME
 git clone https://github.com/itrocket-am/snap
 cd snap
-chmod +x snap.sh
+chmod +x snap.sh build.sh
 ```
 
 Copy `snap.conf_example` to `snap.conf` and configure
