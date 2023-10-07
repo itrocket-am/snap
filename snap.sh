@@ -78,30 +78,6 @@ echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
 echo '================================================='
 sleep 3
 
-# check updates on git
-# Вычисляем начальные хэши файлов
-snap_hash_before=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
-build_hash_before=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
-
-# Запускаем build.sh
-cd /home/${PR_USER}/snap
-sudo -u $PR_USER /home/${PR_USER}/snap/build.sh $PR_USER
-
-# Вычисляем хэши файлов после выполнения build.sh
-snap_hash_after=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
-build_hash_after=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
-
-# Сравниваем хэши
-if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" != "$build_hash_after" ]]; then
-  echo "Files have changed, restarting service..."
-  chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
-  systemctl restart ${PR_USER}-snap
-  echo git pull completed, service restarted, waiting 1 min...
-  sleep 60
-else
-  echo "No changes in files, skipping service restart."
-fi
-
 # start script
 for (( ;; )); do
 # create addrbook cycles
@@ -492,5 +468,28 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 
 # Если хотите увидеть содержимое файла, раскомментируйте следующую строку
 # cat $PUBLIC_FILE_JSON
-echo test
+
+# check updates on git
+# Вычисляем начальные хэши файлов
+snap_hash_before=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
+build_hash_before=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
+
+# Запускаем build.sh
+cd /home/${PR_USER}/snap
+sudo -u $PR_USER /home/${PR_USER}/snap/build.sh $PR_USER
+
+# Вычисляем хэши файлов после выполнения build.sh
+snap_hash_after=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
+build_hash_after=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
+
+# Сравниваем хэши
+if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" != "$build_hash_after" ]]; then
+  echo "Files have changed, restarting service..."
+  chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
+  systemctl restart ${PR_USER}-snap
+  echo git pull completed, service restarted, waiting 1 min...
+  sleep 60
+else
+  echo "No changes in files, skipping service restart."
+fi
 done
