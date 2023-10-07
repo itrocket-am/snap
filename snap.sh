@@ -383,11 +383,11 @@ fi
 
 if check_localhost_connection; then
     local_data=$(fetch_data "localhost:${PORT}/net_info")
-    process_data "$local_data"
+    process_data "$local_data" "None"  # "None" signifies no parent for the localhost
 
     if check_rpc_connection; then
         public_data=$(fetch_data "$RPC/net_info")
-        process_data "$public_data"
+        process_data "$public_data" "$RPC"  # The parent here is whatever $RPC holds
     fi
 
     # Обработка доступных RPC
