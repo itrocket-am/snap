@@ -476,9 +476,9 @@ sudo -E env USER=$PR_USER git pull > /dev/null 2>&1 || true
 
 # Проверить, были ли изменения в файле snap.sh
 if git diff --quiet snap.sh; then
-    echo "Файл $FILE_PATH не был изменен."
+    echo "Файл snap.sh не был изменен."
 else
-    echo "Файл $FILE_PATH был изменен, рестарт сервиса..."
+    echo "Файл snap.sh был изменен, рестарт сервиса..."
 
     # Выполнить команду для перезапуска сервиса
     systemctl restart ${PROJECT}-snap
