@@ -19,6 +19,7 @@ RESET=$(sed -n "/reset:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 rpcStatus=$(sed -n "/rpcStatus:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 CHAT_ID_ALARM=$(sed -n "/chat_id_alarm:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 BOT_TOKEN=$(sed -n "/bot_token:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
+SLEPP=$(sed -n "/sleep:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 
 # Check folder on the file server
 PUBLIC_FOLDER=/var/www/$TYPE-files/$PROJECT
