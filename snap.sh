@@ -78,31 +78,6 @@ echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
 echo '================================================='
 sleep 3
 
-# Выполнить git pull
-  # cd /home/$PR_USER/snap
-  chown -R $PR_USER:$PR_USER /home/$PR_USER/snap
-  sudo chmod -R 755 /home/$PR_USER/snap
-  echo Checking updates...
-  git stash
-  GIT_PULL_RESULT=$(git pull https://github.com/itrocket-am/snap.git main)
-  echo -e "\033[0;32m"$GIT_PULL_RESULT"\033[0m"
-  GIT_STATUS=$(echo ${GIT_PULL_RESULT} | awk '{print $1}')
-  echo -e "\033[0;32m"$GIT_STATUS"\033[0m"
-  PACKAGE_JSON_UPDATED=$(git diff HEAD@{1} HEAD --name-only | grep -c "package.json")
-
-  if [ "$GIT_STATUS" != "Updating" ]; then
-    echo "No have any updates yet"
-  else
-    if [ "$PACKAGE_JSON_UPDATED" -gt 0 ]; then
-      echo "Dependencies changed in package.json, updating dependencies..."
-    fi
-    echo restarting and sending tg message...
-    # systemctl restart ${PROJECT}-snap
-    MESSAGE="itrocket.net builded and moved to public folder!"
-  curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
-  fi
-  sleep 3600
-
 # start script
 for (( ;; )); do
 # create addrbook cycles
@@ -495,5 +470,30 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 
 # Если хотите увидеть содержимое файла, раскомментируйте следующую строку
 # cat $PUBLIC_FILE_JSON
+
+# Выполнить git pull
+  # cd /home/$PR_USER/snap
+  chown -R $PR_USER:$PR_USER /home/$PR_USER/snap
+  sudo chmod -R 755 /home/$PR_USER/snap
+  echo Checking updates...
+  git stash
+  GIT_PULL_RESULT=$(git pull https://github.com/itrocket-am/snap.git main)
+  echo -e "\033[0;32m"$GIT_PULL_RESULT"\033[0m"
+  GIT_STATUS=$(echo ${GIT_PULL_RESULT} | awk '{print $1}')
+  echo -e "\033[0;32m"$GIT_STATUS"\033[0m"
+  PACKAGE_JSON_UPDATED=$(git diff HEAD@{1} HEAD --name-only | grep -c "package.json")
+
+  if [ "$GIT_STATUS" != "Updating" ]; then
+    echo "No have any updates yet"
+  else
+    if [ "$PACKAGE_JSON_UPDATED" -gt 0 ]; then
+      echo "Dependencies changed in package.json, updating dependencies..."
+    fi
+    echo restarting and sending tg message...
+    # systemctl restart ${PROJECT}-snap
+    MESSAGE="itrocket.net builded and moved to public folder!"
+  curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
+  fi
+  sleep 3600
 
 done
