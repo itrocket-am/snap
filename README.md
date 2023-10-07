@@ -14,7 +14,7 @@ cp snap.conf_example snap.conf
 Save variables
 ```
 PROJECT="$USER"
-PATH="$(pwd)"
+PATH="${HOME}/snap"
 ```
 
 Create Service file
