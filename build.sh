@@ -23,8 +23,6 @@ SLEEP=$(sed -n "/sleep:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 
 # Выполнить git pull
   cd /home/${PR_USER}/snap
-  # chown -R ${PR_USER}:${PR_USER} /home/${PR_USER}/snap
-  # chmod -R 755 /home/${PR_USER}/snap
   echo Checking updates...
   git stash
   GIT_PULL_RESULT=$(git pull https://github.com/itrocket-am/snap.git main)
