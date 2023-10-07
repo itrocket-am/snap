@@ -95,6 +95,8 @@ if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" !=
   echo "Files have changed, restarting service..."
   chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
   systemctl restart ${PR_USER}-snap
+  echo git pull completed, service restarted, waiting 1 min...
+  sleep 60
 else
   echo "No changes in files, skipping service restart."
 fi
