@@ -492,4 +492,5 @@ if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" !=
 else
   echo "No changes in files, skipping service restart."
 fi
+echo tet
 done
