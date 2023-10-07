@@ -12,5 +12,6 @@ source: {
       rpcStatus: 'true',
       reset: 'tendermint unsafe-reset-all',
       chat_id_alarm: '<TELEGRAM_CHT_ID>',
-      bot_token: '<TELEGRAM_BOT_TOKEN>'
+      bot_token: '<TELEGRAM_BOT_TOKEN>',
+      sleep: '3600'
 }
