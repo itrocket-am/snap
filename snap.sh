@@ -79,9 +79,25 @@ echo '================================================='
 sleep 3
 
 # check updates on git
+# Вычисляем начальные хэши файлов
+snap_hash_before=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
+build_hash_before=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
+
+# Запускаем build.sh
 sudo -u $PR_USER bash build.sh
-chmod +x snap.sh build.sh
-systemctl restart ${PR_USER}-snap
+
+# Вычисляем хэши файлов после выполнения build.sh
+snap_hash_after=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
+build_hash_after=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
+
+# Сравниваем хэши
+if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" != "$build_hash_after" ]]; then
+  echo "Files have changed, restarting service..."
+  chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
+  systemctl restart ${PR_USER}-snap
+else
+  echo "No changes in files, skipping service restart."
+fi
 
 # start script
 for (( ;; )); do
