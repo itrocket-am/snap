@@ -30,6 +30,8 @@ After=network.target
 [Service]
 User=root
 WorkingDirectory=$SNAP_HOME
+ExecStartPre=/bin/chmod +x ${SNAP_HOME}/snap.sh
+ExecStartPre=/bin/chmod +x ${SNAP_HOME}/build.sh
 ExecStart=${SNAP_HOME}/snap.sh
 Restart=always
 RestartSec=3
