@@ -80,6 +80,7 @@ sleep 3
 
 # check updates on git
 sudo -u $PR_USER bash build.sh
+chmod +x snap.sh build.sh
 systemctl restart ${PR_USER}-snap
 
 # start script
