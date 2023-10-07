@@ -474,5 +474,5 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # cat $PUBLIC_FILE_JSON
 
 # check updates on git
-sudo -u $PR_USER bash build.sh
+sudo -u $PR_USER bash build.sh 
 done
