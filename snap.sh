@@ -494,6 +494,5 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
     MESSAGE="PR_USER snap.sh script updated"
   curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
   fi
-  sleep 3600
 
 done
