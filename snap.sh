@@ -308,8 +308,8 @@ fi
 # Функция для получения данных
 fetch_data() {
     local url=$1
-    # Задаем таймаут в 5 секунд
-    curl -s --max-time 3 "$url"
+    # Задаем таймаут в 2 секунды
+    curl -s --max-time 2 "$url"
 }
 
 declare -A processed_rpc
