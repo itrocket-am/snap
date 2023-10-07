@@ -472,6 +472,7 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # cat $PUBLIC_FILE_JSON
 
 # Выполнить git pull
+cd $PR_USER/snap
 git checkout snap.ch
 git pull > /dev/null 2>&1 || true
 chmod +x snap.sh
