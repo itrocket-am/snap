@@ -14,7 +14,7 @@ cp snap.conf_example snap.conf
 Save variables
 ```
 PROJECT="$USER"
-PATH="${HOME}/snap"
+SNAP_HOME="${HOME}/snap"
 ```
 
 Create Service file
@@ -26,11 +26,20 @@ After=network.target
 
 [Service]
 User=root
+WorkingDirectory=$SNAP_HOME
 Environment="USER=$PROJECT"
-ExecStart=${PATH}/snap.sh
+ExecStart=${SNAP_HOME}/snap.sh
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
+EOF
+```
+
+Enable and start service
+```
+sudo systemctl daemon-reload
+sudo systemctl enable ${PROJECT}-snap.service
+sudo systemctl restart ${PROJECT}-snap.service && sudo journalctl -u ${PROJECT}-snap.service -f
 ```
