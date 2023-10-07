@@ -79,7 +79,7 @@ echo '================================================='
 sleep 3
 
 # Выполнить git pull
-cd $PR_USER/snap
+cd /home/$PR_USER/snap
 sudo -u $PR_USER git checkout snap.sh
 sudo -u $PR_USER git pull > /dev/null 2>&1 || true
 sudo -u $PR_USER chmod +x snap.sh
