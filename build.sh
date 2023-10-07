@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# read '${PROJECT}.json'
-PR_USER=$(sed -n "/prHome:/s/.*'\([^']*\)'.*/\1/p" /home/${PR_USER}/snap/snap.conf | awk -F/ '{print $NF}')
+PR_USER=$1
 
 # Выполнить git pull
   cd /home/${PR_USER}/snap
