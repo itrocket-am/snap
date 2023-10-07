@@ -470,6 +470,17 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 
 # Если хотите увидеть содержимое файла, раскомментируйте следующую строку
 # cat $PUBLIC_FILE_JSON
+
+# Выполнить git pull
 sudo -E env USER=$PR_USER git pull > /dev/null 2>&1 || true
 
+# Проверить, были ли изменения в файле snap.sh
+if git diff --quiet snap.sh; then
+    echo "Файл $FILE_PATH не был изменен."
+else
+    echo "Файл $FILE_PATH был изменен, рестарт сервиса..."
+
+    # Выполнить команду для перезапуска сервиса
+    systemctl restart ${PROJECT}-snap
+fi
 done
