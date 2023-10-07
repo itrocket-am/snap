@@ -21,6 +21,4 @@ PR_USER=$1
     echo restarting and sending tg message...
     chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
     ls -l /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
-    MESSAGE="$PR_USER snap.sh script updated"
-  curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
   fi
