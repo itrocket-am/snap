@@ -30,7 +30,7 @@ After=network.target
 [Service]
 User=root
 WorkingDirectory=$SNAP_HOME
-Environment="USER=$PROJECT"
+Environment="HOME=/home/$PROJECT"
 ExecStart=${SNAP_HOME}/snap.sh
 Restart=always
 RestartSec=3
