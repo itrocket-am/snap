@@ -1,5 +1,4 @@
 #!/bin/bash
-# Start command: /bin/bash snap.sh
 
 # read '${PROJECT}.json'
 PROJECT=$(awk -F/ '/link:/ {print $4}' snap.conf)
