@@ -119,6 +119,7 @@ declare -A rpc_list
 
 process_data() {
     local data=$1
+    local parent_rpc=$2  # Add this line to accept parent_rpc as an argument
 
     local peers=$(echo "$data" | jq -c '.result.peers[]')
 
@@ -132,15 +133,15 @@ process_data() {
             rpc_combined="$ip:$port"
             
             temp_key="$rpc_combined"
-            echo "Debug: rpc_combined = $rpc_combined"
+            echo "Debug: rpc_combined = $rpc_combined, parent_rpc = $parent_rpc"  # Modified this line
             rpc_list["${temp_key}"]="{ \"rpc\": \"$rpc_combined\" }"
 
             # Если этот RPC еще не был обработан
             if [[ -z ${processed_rpc["$rpc_combined"]} ]]; then
                 processed_rpc["$rpc_combined"]=1  # помечаем как обработанный
-                echo "Processing new RPC: $rpc_combined"
+                echo "Processing new RPC: $rpc_combined (parent: $parent_rpc)"  # Modified this line
                 new_data=$(fetch_data "http://$rpc_combined/net_info")
-                process_data "$new_data"  # рекурсивный вызов
+                process_data "$new_data" "$rpc_combined"  # Modified this line for recursive call
             fi
         fi
     done
