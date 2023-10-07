@@ -79,7 +79,7 @@ echo '================================================='
 sleep 3
 
 # Выполнить git pull
-  cd /home/$PR_USER/snap
+  # cd /home/$PR_USER/snap
   echo Checking updates...
   git stash
   #GIT_PULL_RESULT=$(git pull https://github.com/itrocket-am/snap.git main)
