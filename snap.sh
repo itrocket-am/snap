@@ -472,7 +472,7 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # cat $PUBLIC_FILE_JSON
 
 # Выполнить git pull
-  # cd /home/$PR_USER/snap
+  cd /home/$PR_USER/snap
   chown -R $PR_USER:$PR_USER /home/$PR_USER/snap
   sudo chmod -R 755 /home/$PR_USER/snap
   echo Checking updates...
