@@ -1,0 +1,16 @@
+source: {
+      link: 'https://testnet.itrocket.net/zetachain/staking',
+      prHome: '/home/zetachain',
+      binHome: '/home/zetachain/go/bin/zetacored',
+      snapMaxSize: '3',
+      port: '14',
+      bin: 'zetacored',
+      path: '.zetacored',
+      peerID: 'd21b103628b0d5d824bbe81b809d8dc457bd2059',
+      peerPort: '14656',
+      seedPort: '14656',
+      rpcStatus: 'true',
+      reset: 'tendermint unsafe-reset-all',
+      chat_id_alarm: '<TELEGRAM_CHT_ID>',
+      bot_token: '<TELEGRAM_BOT_TOKEN>'
+}
