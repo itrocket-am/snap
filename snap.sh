@@ -475,7 +475,7 @@ snap_hash_before=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
 build_hash_before=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
 
 # Запускаем build.sh
-sudo -u $PR_USER bash /home/${PR_USER}/snap/build.sh
+sudo -u $PR_USER bash build.sh $PR_USER
 
 # Вычисляем хэши файлов после выполнения build.sh
 snap_hash_after=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
