@@ -78,6 +78,10 @@ echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
 echo '================================================='
 sleep 3
 
+bash build.sh
+echo sleep 60
+sleep 60
+
 # start script
 for (( ;; )); do
 # create addrbook cycles
