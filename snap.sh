@@ -19,7 +19,7 @@ RESET=$(sed -n "/reset:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 rpcStatus=$(sed -n "/rpcStatus:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 CHAT_ID_ALARM=$(sed -n "/chat_id_alarm:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 BOT_TOKEN=$(sed -n "/bot_token:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-SLEPP=$(sed -n "/sleep:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
+SLEEP=$(sed -n "/sleep:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
 
 # Check folder on the file server
 PUBLIC_FOLDER=/var/www/$TYPE-files/$PROJECT
@@ -75,6 +75,7 @@ echo -e "Snapshot MAX size: \e[1m\e[32m$snapMaxSize gb\e[0m"
 echo -e "Sleep time: \e[1m\e[32m$SLEEP\e[0m"
 echo -e "PEERS: \e[1m\e[32m$PEERS\e[0m"
 echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
+echo -e "SLEEP: \e[1m\e[32m$SLEEP sec\e[0m"
 echo '================================================='
 sleep 3
 
