@@ -14,8 +14,9 @@ cp snap.conf_example snap.conf
 ```
 Save variables
 ```
-PROJECT="$USER"
-SNAP_HOME="${HOME}/snap"
+echo "export PROJECT="$USER"" >> $HOME/.bash_profile
+echo "export SNAP_HOME="${HOME}/snap"" >> $HOME/.bash_profile
+source $HOME/.bash_profile
 ```
 
 Create Service file
@@ -43,4 +44,11 @@ Enable and start service
 sudo systemctl daemon-reload
 sudo systemctl enable ${PROJECT}-snap.service
 sudo systemctl restart ${PROJECT}-snap.service && sudo journalctl -u ${PROJECT}-snap.service -f
+```
+
+### Delete 
+```
+sudo systemctl stop ${PROJECT}-snap
+sudo systemctl disable ${PROJECT}-snap
+sudo rm -rf /etc/systemd/system/${PROJECT}-snap.service
 ```
