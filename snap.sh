@@ -1,9 +1,6 @@
 #!/bin/bash
 # Start command: sudo /bin/bash snap.sh
 
-read -p "Enter sleep time (sec):" SLEEP
-echo 'export SLEEP='$SLEEP
-
 # read '${PROJECT}.json'
 PROJECT=$(awk -F/ '/link:/ {print $4}' snap.conf)
 TYPE=$(sed -n "/link:/s/.*https:\/\/\([^\.]*\)\..*/\1/p" snap.conf)
