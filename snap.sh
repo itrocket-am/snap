@@ -95,9 +95,6 @@ sleep 3
   else
     if [ "$PACKAGE_JSON_UPDATED" -gt 0 ]; then
       echo "Dependencies changed in package.json, updating dependencies..."
-      echo "Update build script running!!!"
-      echo Waiting 1 sec and start Building
-      sleep 1
     fi
     echo restarting and sending tg message...
     # systemctl restart ${PROJECT}-snap
