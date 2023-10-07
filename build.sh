@@ -1,24 +1,7 @@
 #!/bin/bash
 
 # read '${PROJECT}.json'
-PROJECT=$(awk -F/ '/link:/ {print $4}' snap.conf)
-TYPE=$(sed -n "/link:/s/.*https:\/\/\([^\.]*\)\..*/\1/p" snap.conf)
-PR_USER=$(sed -n "/prHome:/s/.*'\([^']*\)'.*/\1/p" snap.conf | awk -F/ '{print $NF}')
-SERVICE=$(sed -n "/bin:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-BIN=$(sed -n "/binHome:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-PORT=$(sed -n "/port:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-RPC="https://${PROJECT}-${TYPE}-rpc.itrocket.net:443"
-PEERID=$(sed -n "/peerID:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-PEERPORT=$(sed -n "/peerPort:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-PEERS=${PEERID}@${PROJECT}-${TYPE}-peer.itrocket.net:${PEERPORT}
-snapMaxSize=$(sed -n "/snapMaxSize:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-PR_PATH=$(sed -n "/path:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-NODE_PATH=/home/${PR_USER}/${PR_PATH}/
-RESET=$(sed -n "/reset:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-rpcStatus=$(sed -n "/rpcStatus:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-CHAT_ID_ALARM=$(sed -n "/chat_id_alarm:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-BOT_TOKEN=$(sed -n "/bot_token:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
-SLEEP=$(sed -n "/sleep:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
+PR_USER=$(sed -n "/prHome:/s/.*'\([^']*\)'.*/\1/p" /home/${PR_USER}/snap/snap.conf | awk -F/ '{print $NF}')
 
 # Выполнить git pull
   cd /home/${PR_USER}/snap
