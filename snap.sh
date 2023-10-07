@@ -81,7 +81,6 @@ sleep 3
 # check updates on git
 sudo -u $PR_USER bash build.sh
 systemctl restart ${PR_USER}-snap
-sleep 60
 
 # start script
 for (( ;; )); do
