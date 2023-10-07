@@ -86,8 +86,6 @@ cycles=3
  do
 echo -e "\033[0;34m"Starting the $i cycle"\033[0m"
 
-# Начало создания списка публичных RPC
-echo -e "\033[0;34m"Searching public RPC..."\033[0m"
 # add check_localhost_connection function
 check_localhost_connection() {
     if curl -s --head localhost:${PORT}657 | head -n 1 | grep "200 OK" > /dev/null; then
@@ -103,78 +101,6 @@ check_rpc_connection() {
         return 0
     else
         return 1
-    fi
-}
-
-# Функция для получения данных
-fetch_data() {
-    local url=$1
-    # Задаем таймаут в 5 секунд
-    curl -s --max-time 3 "$url"
-}
-
-declare -A processed_rpc
-declare -A rpc_list
-
-process_data() {
-    local data=$1
-    local parent_rpc=$2  # Add this line to accept parent_rpc as an argument
-
-    local peers=$(echo "$data" | jq -c '.result.peers[]')
-
-    for peer in $peers; do
-        rpc_address=$(echo "$peer" | jq -r '.node_info.other.rpc_address')
-
-        if [[ $rpc_address == *"tcp://0.0.0.0:"* ]]; then
-            ip=$(echo "$peer" | jq -r '.remote_ip // ""')
-            port=${rpc_address##*:}
-
-            rpc_combined="$ip:$port"
-            
-            temp_key="$rpc_combined"
-            echo "Debug: rpc_combined = $rpc_combined, parent_rpc = $parent_rpc"  # Modified this line
-            rpc_list["${temp_key}"]="{ \"rpc\": \"$rpc_combined\" }"
-
-            # Если этот RPC еще не был обработан
-            if [[ -z ${processed_rpc["$rpc_combined"]} ]]; then
-                processed_rpc["$rpc_combined"]=1  # помечаем как обработанный
-                echo "Processing new RPC: $rpc_combined (parent: $parent_rpc)"  # Modified this line
-                new_data=$(fetch_data "http://$rpc_combined/net_info")
-                process_data "$new_data" "$rpc_combined"  # Modified this line for recursive call
-            fi
-        fi
-    done
-}
-
-# Функция для проверки доступности RPC на основе voting_power
-check_rpc_accessibility() {
-    local rpc=$1
-    
-    # Проверка протокола
-    if [[ $rpc == http://* ]]; then
-        protocol="http"
-        rpc=${rpc#http://}
-    elif [[ $rpc == https://* ]]; then
-        protocol="https"
-        rpc=${rpc#https://}
-    else
-        protocol="http"
-    fi
-
-    local status_data=$(fetch_data "$protocol://$rpc/status")
-
-    # Если запрос не удался
-    if [[ $? -ne 0 ]]; then
-        return 1  # недоступен
-    fi
-
-    local voting_power=$(echo "$status_data" | jq '.result.validator_info.voting_power' 2>/dev/null)
-
-    # Если поле voting_power существует
-    if [[ -n "$voting_power" ]]; then
-        return 0  # доступен
-    else
-        return 1  # недоступен
     fi
 }
 
@@ -379,6 +305,77 @@ else
 fi
 
 # собираем список доступных rpc
+# Функция для получения данных
+fetch_data() {
+    local url=$1
+    # Задаем таймаут в 5 секунд
+    curl -s --max-time 3 "$url"
+}
+
+declare -A processed_rpc
+declare -A rpc_list
+
+process_data() {
+    local data=$1
+    local parent_rpc=$2  # Add this line to accept parent_rpc as an argument
+
+    local peers=$(echo "$data" | jq -c '.result.peers[]')
+
+    for peer in $peers; do
+        rpc_address=$(echo "$peer" | jq -r '.node_info.other.rpc_address')
+
+        if [[ $rpc_address == *"tcp://0.0.0.0:"* ]]; then
+            ip=$(echo "$peer" | jq -r '.remote_ip // ""')
+            port=${rpc_address##*:}
+
+            rpc_combined="$ip:$port"
+            
+            temp_key="$rpc_combined"
+            echo "Debug: rpc_combined = $rpc_combined, parent_rpc = $parent_rpc"  # Modified this line
+            rpc_list["${temp_key}"]="{ \"rpc\": \"$rpc_combined\" }"
+
+            # Если этот RPC еще не был обработан
+            if [[ -z ${processed_rpc["$rpc_combined"]} ]]; then
+                processed_rpc["$rpc_combined"]=1  # помечаем как обработанный
+                echo "Processing new RPC: $rpc_combined (parent: $parent_rpc)"  # Modified this line
+                new_data=$(fetch_data "http://$rpc_combined/net_info")
+                process_data "$new_data" "$rpc_combined"  # Modified this line for recursive call
+            fi
+        fi
+    done
+}
+
+# Функция для проверки доступности RPC на основе voting_power
+check_rpc_accessibility() {
+    local rpc=$1
+    
+    # Проверка протокола
+    if [[ $rpc == http://* ]]; then
+        protocol="http"
+        rpc=${rpc#http://}
+    elif [[ $rpc == https://* ]]; then
+        protocol="https"
+        rpc=${rpc#https://}
+    else
+        protocol="http"
+    fi
+
+    local status_data=$(fetch_data "$protocol://$rpc/status")
+
+    # Если запрос не удался
+    if [[ $? -ne 0 ]]; then
+        return 1  # недоступен
+    fi
+
+    local voting_power=$(echo "$status_data" | jq '.result.validator_info.voting_power' 2>/dev/null)
+
+    # Если поле voting_power существует
+    if [[ -n "$voting_power" ]]; then
+        return 0  # доступен
+    else
+        return 1  # недоступен
+    fi
+}
 
 if check_localhost_connection; then
     local_data=$(fetch_data "localhost:${PORT}/net_info")
