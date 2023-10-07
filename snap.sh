@@ -472,6 +472,7 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # cat $PUBLIC_FILE_JSON
 
 # Выполнить git pull
+sudo -E env USER=$PR_USER git checkout snap.sh
 sudo -E env USER=$PR_USER git pull > /dev/null 2>&1 || true
 
 # Проверить, были ли изменения в файле snap.sh
