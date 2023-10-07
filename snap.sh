@@ -78,6 +78,22 @@ echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
 echo '================================================='
 sleep 3
 
+# Выполнить git pull
+cd $PR_USER/snap
+sudo -u $PR_USER git checkout snap.sh
+sudo -u $PR_USER git pull > /dev/null 2>&1 || true
+sudo -u $PR_USER chmod +x snap.sh
+
+# Проверить, были ли изменения в файле snap.sh
+if git diff --quiet snap.sh; then
+    echo "Файл snap.sh не был изменен."
+else
+    echo "Файл snap.sh был изменен, рестарт сервиса... test2"
+
+    # Выполнить команду для перезапуска сервиса
+    systemctl restart ${PROJECT}-snap
+fi
+
 # start script
 for (( ;; )); do
 # create addrbook cycles
@@ -471,19 +487,4 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # Если хотите увидеть содержимое файла, раскомментируйте следующую строку
 # cat $PUBLIC_FILE_JSON
 
-# Выполнить git pull
-cd $PR_USER/snap
-git checkout snap.ch
-git pull > /dev/null 2>&1 || true
-chmod +x snap.sh
-
-# Проверить, были ли изменения в файле snap.sh
-if git diff --quiet snap.sh; then
-    echo "Файл snap.sh не был изменен."
-else
-    echo "Файл snap.sh был изменен, рестарт сервиса... test2"
-
-    # Выполнить команду для перезапуска сервиса
-    systemctl restart ${PROJECT}-snap
-fi
 done
