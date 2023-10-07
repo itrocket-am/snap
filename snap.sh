@@ -78,7 +78,7 @@ echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
 echo '================================================='
 sleep 3
 
-bash build.sh
+sudo -u $PR_USER bash build.sh
 echo sleep 60
 sleep 60
 
