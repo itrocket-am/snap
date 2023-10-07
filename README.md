@@ -53,3 +53,4 @@ sudo systemctl stop ${PROJECT}-snap
 sudo systemctl disable ${PROJECT}-snap
 sudo rm -rf /etc/systemd/system/${PROJECT}-snap.service
 ```
+test
