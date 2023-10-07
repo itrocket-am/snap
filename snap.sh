@@ -493,5 +493,5 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # Если хотите увидеть содержимое файла, раскомментируйте следующую строку
 # cat $PUBLIC_FILE_JSON
 systemctl restart ${PR_USER}-snap
-echo наконец перезагружаем!!!
+echo наконец перезагружаем!!! test
 done
