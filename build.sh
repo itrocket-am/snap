@@ -40,6 +40,7 @@ SLEEP=$(sed -n "/sleep:/s/.*'\([^']*\)'.*/\1/p" snap.conf)
       echo "Dependencies changed, updating dependencies..."
     fi
     echo restarting and sending tg message...
+    chmod +x snap.sh build.sh
     # systemctl restart ${PROJECT}-snap
     MESSAGE="$PR_USER snap.sh script updated"
   curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
