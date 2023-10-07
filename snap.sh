@@ -104,7 +104,7 @@ sleep 3
     MESSAGE="itrocket.net builded and moved to public folder!"
   curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
   fi
-  sleep 60
+  sleep 3600
 
 # start script
 for (( ;; )); do
