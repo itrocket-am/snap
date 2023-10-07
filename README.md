@@ -4,7 +4,7 @@
 Clone repositories
 ```
 cd $HOME
-git clone git clone https://github.com/itrocket-am/snap
+git clone https://github.com/itrocket-am/snap
 cd snap
 chmod +x snap.sh
 ```
