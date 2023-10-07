@@ -75,7 +75,6 @@ echo -e "Snapshot MAX size: \e[1m\e[32m$snapMaxSize gb\e[0m"
 echo -e "Sleep time: \e[1m\e[32m$SLEEP\e[0m"
 echo -e "PEERS: \e[1m\e[32m$PEERS\e[0m"
 echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
-echo -e "SLEEP: \e[1m\e[32m$SLEEP sec\e[0m"
 echo '================================================='
 sleep 3
 
