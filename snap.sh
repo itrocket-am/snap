@@ -472,6 +472,6 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 
 # Если хотите увидеть содержимое файла, раскомментируйте следующую строку
 # cat $PUBLIC_FILE_JSON
-sudo -E env USER=$PR_USER git pull
+sudo -E env USER=$PR_USER git pull > /dev/null 2>&1 || true
 
 done
