@@ -480,7 +480,7 @@ chmod +x snap.sh
 if git diff --quiet snap.sh; then
     echo "Файл snap.sh не был изменен."
 else
-    echo "Файл snap.sh был изменен, рестарт сервиса... test "
+    echo "Файл snap.sh был изменен, рестарт сервиса... test2"
 
     # Выполнить команду для перезапуска сервиса
     systemctl restart ${PROJECT}-snap
