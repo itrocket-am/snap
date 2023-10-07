@@ -479,7 +479,7 @@ git pull > /dev/null 2>&1 || true
 if git diff --quiet snap.sh; then
     echo "Файл snap.sh не был изменен."
 else
-    echo "Файл snap.sh был изменен, рестарт сервиса..."
+    echo "Файл snap.sh был изменен, рестарт сервиса... test"
 
     # Выполнить команду для перезапуска сервиса
     systemctl restart ${PROJECT}-snap
