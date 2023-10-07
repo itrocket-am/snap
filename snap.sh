@@ -78,27 +78,6 @@ echo -e "RESET: \e[1m\e[32m$PEERS\e[0m"
 echo '================================================='
 sleep 3
 
-# check updates on git
-# Вычисляем начальные хэши файлов
-snap_hash_before=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
-build_hash_before=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
-
-# Запускаем build.sh
-sudo -u $PR_USER bash build.sh
-
-# Вычисляем хэши файлов после выполнения build.sh
-snap_hash_after=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
-build_hash_after=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
-
-# Сравниваем хэши
-if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" != "$build_hash_after" ]]; then
-  echo "Files have changed, restarting service..."
-  chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
-  systemctl restart ${PR_USER}-snap
-else
-  echo "No changes in files, skipping service restart."
-fi
-
 # start script
 for (( ;; )); do
 # create addrbook cycles
@@ -491,5 +470,24 @@ sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
 # cat $PUBLIC_FILE_JSON
 
 # check updates on git
-sudo -u $PR_USER bash build.sh 
+# Вычисляем начальные хэши файлов
+snap_hash_before=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
+build_hash_before=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
+
+# Запускаем build.sh
+sudo -u $PR_USER bash build.sh
+
+# Вычисляем хэши файлов после выполнения build.sh
+snap_hash_after=$(sha256sum /home/${PR_USER}/snap/snap.sh | awk '{print $1}')
+build_hash_after=$(sha256sum /home/${PR_USER}/snap/build.sh | awk '{print $1}')
+
+# Сравниваем хэши
+if [[ "$snap_hash_before" != "$snap_hash_after" ]] || [[ "$build_hash_before" != "$build_hash_after" ]]; then
+  echo "Files have changed, restarting service..."
+  chmod +x /home/${PR_USER}/snap/snap.sh /home/${PR_USER}/snap/build.sh
+  systemctl restart ${PR_USER}-snap
+else
+  echo "No changes in files, skipping service restart."
+fi
+
 done
