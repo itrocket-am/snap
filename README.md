@@ -13,26 +13,20 @@ Copy `.snap.conf_example` to `snap.conf` and configure
 ```
 cp $HOME/snap/.snap.conf_example $HOME/snap/snap.conf
 ```
-Save variables
-```
-echo "export PROJECT="$USER"" >> $HOME/.bash_profile
-echo "export SNAP_HOME="${HOME}/snap"" >> $HOME/.bash_profile
-source $HOME/.bash_profile
-```
 
 Create Service file
 ```
-sudo tee /etc/systemd/system/${PROJECT}-snap.service > /dev/null <<EOF
+sudo tee /etc/systemd/system/${USER}-snap.service > /dev/null <<EOF
 [Unit]
-Description=$PROJECT Snap script daemon
+Description=$USER Snap script daemon
 After=network.target
 
 [Service]
 User=root
-WorkingDirectory=$SNAP_HOME
-ExecStartPre=/bin/chmod +x ${SNAP_HOME}/snap.sh
-ExecStartPre=/bin/chmod +x ${SNAP_HOME}/build.sh
-ExecStart=${SNAP_HOME}/snap.sh
+WorkingDirectory=${HOME}/snap
+ExecStartPre=/bin/chmod +x ${HOME}/snap/snap.sh
+ExecStartPre=/bin/chmod +x ${HOME}/snap/build.sh
+ExecStart=${HOME}/snap/snap.sh
 Restart=always
 RestartSec=3
 
@@ -44,13 +38,13 @@ EOF
 Enable and start service
 ```
 sudo systemctl daemon-reload
-sudo systemctl enable ${PROJECT}-snap.service
-sudo systemctl restart ${PROJECT}-snap.service && sudo journalctl -u ${PROJECT}-snap.service -f
+sudo systemctl enable ${USER}-snap.service
+sudo systemctl restart ${USER}-snap.service && sudo journalctl -u ${USER}-snap.service -f
 ```
 
 ### Delete 
 ```
-sudo systemctl stop ${PROJECT}-snap
-sudo systemctl disable ${PROJECT}-snap
-sudo rm -rf /etc/systemd/system/${PROJECT}-snap.service
+sudo systemctl stop ${USER}-snap
+sudo systemctl disable ${USER}-snap
+sudo rm -rf /etc/systemd/system/${USER}-snap.service
 ```
