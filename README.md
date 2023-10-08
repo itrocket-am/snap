@@ -9,7 +9,7 @@ cd snap
 chmod +x snap.sh build.sh
 ```
 
-Copy `.snap.conf_example` to `snap.conf` and configure
+Copy `$HOME/snap/.snap.conf_example` to `$HOME/snap/snap.conf` and configure
 ```
 cp snap.conf_example snap.conf
 ```
