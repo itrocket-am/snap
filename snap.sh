@@ -330,21 +330,40 @@ else
 fi
 
 # собираем список доступных rpc
-# Функция для получения данных
+# add fetch_data function
+echo RPC scanner stated...
 fetch_data() {
     local url=$1
-    # Задаем таймаут в 2 секунды
-    curl -s --max-time 2 "$url"
+    local data=$(curl -s --max-time 2 "$url")
+    
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to fetch data from $url"
+        return 1
+    fi
+    
+    echo "$data"
+    return 0
 }
 
 declare -A processed_rpc
 declare -A rpc_list
 
-process_data() {
+process_data_rpc_list() {
     local data=$1
-    local parent_rpc=$2  # Add this line to accept parent_rpc as an argument
-
+    
+    # проверка на пустые данные
+    if [ -z "$data" ]; then
+        echo "Warning: No data to process."
+        return 1
+    fi
+    
     local peers=$(echo "$data" | jq -c '.result.peers[]')
+    
+    # проверка на ошибки jq
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to parse JSON data."
+        return 1
+    fi
 
     for peer in $peers; do
         rpc_address=$(echo "$peer" | jq -r '.node_info.other.rpc_address')
@@ -356,15 +375,22 @@ process_data() {
             rpc_combined="$ip:$port"
             
             temp_key="$rpc_combined"
-            echo "Debug: rpc_combined = $rpc_combined, parent_rpc = $parent_rpc"  # Modified this line
+            echo "Debug: rpc_combined = $rpc_combined"
             rpc_list["${temp_key}"]="{ \"rpc\": \"$rpc_combined\" }"
 
             # Если этот RPC еще не был обработан
             if [[ -z ${processed_rpc["$rpc_combined"]} ]]; then
                 processed_rpc["$rpc_combined"]=1  # помечаем как обработанный
-                echo "Processing new RPC: $rpc_combined (parent: $parent_rpc)"  # Modified this line
+                echo "Processing new RPC: $rpc_combined" 
+                
                 new_data=$(fetch_data "http://$rpc_combined/net_info")
-                process_data "$new_data" "$rpc_combined"  # Modified this line for recursive call
+                
+                # проверка успешности выполнения fetch_data
+                if [ $? -eq 0 ]; then
+                    process_data_rpc_list "$new_data"
+                else
+                    echo "Warning: Skipping $rpc_combined due to fetch error."
+                fi
             fi
         fi
     done
@@ -404,11 +430,11 @@ check_rpc_accessibility() {
 
 if check_localhost_connection; then
     local_data=$(fetch_data "localhost:${PORT}/net_info")
-    process_data "$local_data" "None"  # "None" signifies no parent for the localhost
+    process_data_rpc_list "$local_data" "None"  # "None" signifies no parent for the localhost
 
     if check_rpc_connection; then
-        public_data=$(fetch_data "$RPC/net_info")
-        process_data "$public_data" "$RPC"  # The parent here is whatever $RPC holds
+       public_data=$(fetch_data "$RPC/net_info")
+        process_data_rpc_list "$public_data" "$RPC"  # The parent here is whatever $RPC holds
     fi
 
     # Обработка доступных RPC
