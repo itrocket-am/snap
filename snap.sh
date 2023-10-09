@@ -63,6 +63,7 @@ sed -i -e "s/^rpc_servers *=.*/rpc_servers = \"\"/" $NODE_PATH/config/config.tom
 sed -i -e "s/^trust_hash *=.*/trust_hash = \"\"/" $NODE_PATH/config/config.toml
 sed -i -e "s/^trust_height *=.*/trust_height = 0/" $NODE_PATH/config/config.toml
 sed -i -e "s/^persistent_peers *=.*/persistent_peers = \"\"/" $NODE_PATH/config/config.toml
+sed -i -e "s|laddr = \"tcp://0.0.0.0:${PORT}657\"|laddr = \"tcp://127.0.0.1:${PORT}657\"|g" $NODE_PATH/config/config.toml
 
 echo '================================================='
 echo -e "RPC: \e[1m\e[32m$RPC\e[0m"
