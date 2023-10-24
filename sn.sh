@@ -64,7 +64,7 @@ PRUNING_TYPE=$(grep "^pruning =" "$NODE_PATH/config/app.toml" | awk '{print $3}'
 PRUNING_KEEP_RECENT=$(grep "^pruning-keep-recent" "$NODE_PATH/config/app.toml"  | awk '{print $3}' | sed 's/\"//g')
 PRUNING_INTERVAL=$(grep "^pruning-interval" "$NODE_PATH/config/app.toml" | awk '{print $3}' | sed 's/\"//g')
 INDEXER=$(grep "^indexer =" "$NODE_PATH/config/config.toml" | awk '{print $3}' | sed 's/\"//g')
-tee /var/www/$TYPE-files/$PROJECT/.snap_state.json > /dev/null <<EOF
+tee /var/www/$TYPE-files/$PROJECT/.current_state.json > /dev/null <<EOF
 {
   "SnapshotHeight": "$SNAP_HEIGHT",
   "SnapshotSize": "$SNAP_SIZE",
