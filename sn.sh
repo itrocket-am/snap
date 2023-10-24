@@ -54,10 +54,10 @@ while ! nc -z localhost ${PORT}657; do
 done
 SNAP_HEIGHT=$(curl -s localhost:${PORT}657/status | jq -r .result.sync_info.latest_block_height)
 systemctl stop $SERVICE && cd $NODE_PATH
-rm $NODE_PATH/snap_archive_$PROJECT.tar.lz4
-tar cvf - data wasm | lz4 - $NODE_PATH/snap_archive_$PROJECT.tar.lz4 && cd $NODE_PATH
-SNAP_SIZE=$(ls -lh $NODE_PATH/snap_archive_$PROJECT.tar.lz4 | awk '{print $5}')
-mv $NODE_PATH/snap_archive_$PROJECT.tar.lz4 "/var/www/$TYPE-files/$PROJECT"
+rm $NODE_PATH/snap_$PROJECT.tar.lz4
+tar cvf - data wasm | lz4 - $NODE_PATH/snap_$PROJECT.tar.lz4 && cd $NODE_PATH
+SNAP_SIZE=$(ls -lh $NODE_PATH/snap_$PROJECT.tar.lz4 | awk '{print $5}')
+mv $NODE_PATH/snap_$PROJECT.tar.lz4 "/var/www/$TYPE-files/$PROJECT"
 # Create current snapshot state, current_state.json
 SNAP_TIME=$(date '+%FT%T.%N%Z')
 PRUNING_TYPE=$(grep "^pruning =" "$NODE_PATH/config/app.toml" | awk '{print $3}' | sed 's/\"//g')
