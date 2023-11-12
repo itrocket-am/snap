@@ -29,15 +29,6 @@ if [ -d "$PUBLIC_FOLDER" ]; then
     mkdir /var/www/$TYPE-files/$PROJECT
     echo "$PUBLIC_FOLDER folder created."
 fi
-# Check pre_rpc file on the file server
-PRE_FILE=/home/$PR_USER/snap/rpc_combined.txt
-
-if [ -f "$PRE_FILE" ]; then
-    echo "$PRE_FILE file exists."
-else
-    touch "$PRE_FILE"
-    echo "$PRE_FILE file created."
-fi
 
 #Check: is there a genesis file on the file server folder
 FILE=/var/www/$TYPE-files/$PROJECT/genesis.json
@@ -120,9 +111,10 @@ check_localhost_connection() {
     fi
 }
 
-# add check_rpc_connection function
+# Function  check_rpc_connection
 check_rpc_connection() {
     if curl -s "$RPC" | grep -q "height" > /dev/null; then
+        PARENT_NETWORK=$(curl -s "$RPC/status" | jq -r '.result.node_info.network')
         return 0
     else
         return 1
@@ -330,14 +322,14 @@ else
 fi
 
 # собираем список доступных rpc
-# add fetch_data function
 echo RPC scanner stated...
+# Function fetch_data 
 fetch_data() {
     local url=$1
     local data=$(curl -s --max-time 2 "$url")
     
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to fetch data from $url"
+        echo "Error: Failed to fetch data from $url" >&2
         return 1
     fi
     
@@ -345,21 +337,21 @@ fetch_data() {
     return 0
 }
 
+
 declare -A processed_rpc
 declare -A rpc_list
 
+# Function process_data_rpc_list
 process_data_rpc_list() {
     local data=$1
-    
-    # проверка на пустые данные
+    local current_rpc_url=$2 # URL текущего обрабатываемого RPC
+
     if [ -z "$data" ]; then
-        echo "Warning: No data to process."
+        echo "Warning: No data to process from $current_rpc_url"
         return 1
     fi
-    
+
     local peers=$(echo "$data" | jq -c '.result.peers[]')
-    
-    # проверка на ошибки jq
     if [ $? -ne 0 ]; then
         echo "Error: Failed to parse JSON data."
         return 1
@@ -367,40 +359,28 @@ process_data_rpc_list() {
 
     for peer in $peers; do
         rpc_address=$(echo "$peer" | jq -r '.node_info.other.rpc_address')
-
         if [[ $rpc_address == *"tcp://0.0.0.0:"* ]]; then
             ip=$(echo "$peer" | jq -r '.remote_ip // ""')
             port=${rpc_address##*:}
-
             rpc_combined="$ip:$port"
-            
             temp_key="$rpc_combined"
-            echo "Debug: rpc_combined = $rpc_combined"
             rpc_list["${temp_key}"]="{ \"rpc\": \"$rpc_combined\" }"
 
-            # Если этот RPC еще не был обработан
             if [[ -z ${processed_rpc["$rpc_combined"]} ]]; then
-                processed_rpc["$rpc_combined"]=1  # помечаем как обработанный
+                processed_rpc["$rpc_combined"]=1
                 echo "Processing new RPC: $rpc_combined" 
-                
                 new_data=$(fetch_data "http://$rpc_combined/net_info")
-                
-                # проверка успешности выполнения fetch_data
                 if [ $? -eq 0 ]; then
-                    process_data_rpc_list "$new_data"
-                else
-                    echo "Warning: Skipping $rpc_combined due to fetch error."
+                    process_data_rpc_list "$new_data" "$rpc_combined" # Передаем текущий URL как параметр
                 fi
             fi
         fi
     done
 }
 
-# Функция для проверки доступности RPC на основе voting_power
+# Function check_rpc_accessibility
 check_rpc_accessibility() {
     local rpc=$1
-    
-    # Проверка протокола
     if [[ $rpc == http://* ]]; then
         protocol="http"
         rpc=${rpc#http://}
@@ -412,84 +392,38 @@ check_rpc_accessibility() {
     fi
 
     local status_data=$(fetch_data "$protocol://$rpc/status")
-
-    # Если запрос не удался
     if [[ $? -ne 0 ]]; then
-        return 1  # недоступен
+        echo "Error: Unable to fetch status data from $rpc"
+        return 1
     fi
 
-    local voting_power=$(echo "$status_data" | jq '.result.validator_info.voting_power' 2>/dev/null)
-
-    # Если поле voting_power существует
-    if [[ -n "$voting_power" ]]; then
-        return 0  # доступен
+    local rpc_network=$(echo "$status_data" | jq -r '.result.node_info.network' 2>/dev/null)
+    if [[ "$rpc_network" == "$PARENT_NETWORK" ]]; then
+        return 0 
     else
-        return 1  # недоступен
+        return 1
     fi
 }
 
-if check_localhost_connection; then
-    local_data=$(fetch_data "localhost:${PORT}/net_info")
-    process_data_rpc_list "$local_data" "None"  # "None" signifies no parent for the localhost
-
-    if check_rpc_connection; then
-       public_data=$(fetch_data "$RPC/net_info")
-        process_data_rpc_list "$public_data" "$RPC"  # The parent here is whatever $RPC holds
-    fi
-
-    # Обработка доступных RPC
-    for rpc in "${!rpc_list[@]}"; do
-        # Если RPC доступен
-        if check_rpc_accessibility "$rpc"; then
-            # Если отсутствует в $PRE_FILE - добавляем
-            if ! grep -q "$rpc" "$PRE_FILE"; then
-                echo "$rpc" >> "$PRE_FILE"
-            fi
-        fi
-    done
-
-#    # Создание временного файла для хранения проверенных RPC
-    TEMP_FILE=$(mktemp)
-
-# Обработка RPC из $PRE_FILE
-while IFS= read -r line; do
-    # Если RPC начинается с "https://", сохраняем независимо от доступности
-    if [[ "$line" == https://* ]]; then
-        echo "$line" >> "$TEMP_FILE"
-    # В противном случае проверяем доступность или наличие в rpc_list
-    elif check_rpc_accessibility "$line" || [[ -n ${rpc_list["$line"]} ]]; then
-        echo "$line" >> "$TEMP_FILE"
-    fi
-done < "$PRE_FILE"
-
-    # Замена $PRE_FILE содержимым из TEMP_FILE
-    mv "$TEMP_FILE" "$PRE_FILE"
-
-    # Опционально: вывод содержимого $PRE_FILE
-    cat "$PRE_FILE"
+# Starting collect public RPCs
+if check_rpc_connection; then
+    public_data=$(fetch_data "$RPC/net_info")
+    process_data_rpc_list "$public_data" "$PARENT_NETWORK"
+    echo "Checking chain_id = $PARENT_NETWORK..."
 fi
 
-# Создайте файл rpc_combined.json или очистите его, если он уже существует
+# Creating and populating the rpc_combined.json file
 FILE_PATH_JSON="/home/$PR_USER/snap/rpc_combined.json"
-PUBLIC_FILE_JSON=/var/www/$TYPE-files/$PROJECT/.rpc_combined.json
+PUBLIC_FILE_JSON="/var/www/$TYPE-files/$PROJECT/.rpc_combined.json"
 
-# Если файл существует, очистите его. Если нет - создайте.
-[[ -f $FILE_PATH_JSON ]] && > "$FILE_PATH_JSON" || touch "$FILE_PATH_JSON"
+# Generate JSON data in memory
+json_data="{"
 
-# Начинаем JSON с открытия объекта
-echo "{" > $FILE_PATH_JSON
-
-# Переменная для определения первой записи (чтобы избежать добавления запятой перед первым объектом)
 first_entry=true
 
-# Цикл для чтения каждой строки из файла $PRE_FILE
-while IFS= read -r rpc; do
-    # Проверка доступности RPC
+for rpc in "${!rpc_list[@]}"; do
     if check_rpc_accessibility "$rpc"; then
-        # Извлечение данных с помощью функции fetch_data
         data=$(fetch_data "$rpc/status")
-        
-        # Извлекаем необходимые данные из ответа RPC
         network=$(echo "$data" | jq -r '.result.node_info.network')
         moniker=$(echo "$data" | jq -r '.result.node_info.moniker')
         tx_index=$(echo "$data" | jq -r '.result.node_info.other.tx_index')
@@ -497,28 +431,40 @@ while IFS= read -r rpc; do
         earliest_block_height=$(echo "$data" | jq -r '.result.sync_info.earliest_block_height')
         catching_up=$(echo "$data" | jq -r '.result.sync_info.catching_up')
         voting_power=$(echo "$data" | jq -r '.result.validator_info.voting_power')
-        scan_time=$(date '+%FT%T.%N%Z')  # Текущая дата и время
+        scan_time=$(date '+%FT%T.%N%Z')
 
-        # Добавляем запятую перед следующим объектом, если это не первая запись
-        if [ "$first_entry" = true ]; then
-            first_entry=false
-        else
-            echo "," >> $FILE_PATH_JSON
+        # Добавление только если catching_up равно false
+        if [ "$catching_up" = "false" ]; then
+            if [ "$first_entry" = false ]; then
+                json_data+=","
+            else
+                first_entry=false
+            fi
+
+            json_data+="\"$rpc\": {\"network\": \"$network\", \"moniker\": \"$moniker\", \"tx_index\": \"$tx_index\", \"latest_block_height\": \"$latest_block_height\", \"earliest_block_height\": \"$earliest_block_height\", \"catching_up\": $catching_up, \"voting_power\": \"$voting_power\", \"scan_time\": \"$scan_time\"}"
         fi
-
-       # Записываем извлеченные данные в файл
-       echo -ne "  \"$rpc\": {\n    \"network\": \"$network\",\n    \"moniker\": \"$moniker\",\n    \"tx_index\": \"$tx_index\",\n    \"latest_block_height\": \"$latest_block_height\",\n    \"earliest_block_height\": \"$earliest_block_height\",\n    \"catching_up\": $catching_up,\n    \"voting_power\": \"$voting_power\",\n    \"scan_time\": \"$scan_time\"\n  }" >> $FILE_PATH_JSON
     fi
-done < "$PRE_FILE"
+done
 
-# Закрываем объект в JSON
-echo "}" >> $FILE_PATH_JSON
+json_data+="}"
 
-# Копируем JSON-файл в публичное место
-sudo cp $FILE_PATH_JSON $PUBLIC_FILE_JSON
+# Sort JSON data by earliest_block_height and format it
+sorted_json=$(echo "$json_data" | jq 'to_entries | sort_by(.value.earliest_block_height | tonumber) | from_entries')
 
-# Если хотите увидеть содержимое файла, раскомментируйте следующую строку
+# Write sorted and formatted JSON data to file
+echo "$sorted_json" > "$FILE_PATH_JSON"
+echo "$FILE_PATH_JSON file created"
+sleep 2
+
+# Copying the JSON file to a public location
+if ! cp "$FILE_PATH_JSON" "$PUBLIC_FILE_JSON"; then
+    echo "Error: Failed to copy JSON file to public location" >&2
+    exit 1
+fi
+
+# Uncomment the following line if you want to see the file content
 # cat $PUBLIC_FILE_JSON
+
 systemctl restart ${PR_USER}-snap
 
 done
