@@ -337,9 +337,37 @@ fetch_data() {
     return 0
 }
 
+if [ "$TYPE" = "testnet" ]; then
+    kjnodes="-testnet"
+    nodejumper="testnet"
+    nodestake="-t"
+    stakerhouse="-testnet"
+    staketown="-testnet"
+    indonode="-t"
+    anode="t"
+  else
+    anode="m"
+fi
+
 
 declare -A processed_rpc
 declare -A rpc_list
+declare -A manual_rpc_list
+
+manual_rpc_list=(
+    ["url1"]="https://${PROJECT}-${TYPE}-rpc.itrocket.net"
+    ["url2"]="https://${PROJECT}${kjnodes}.rpc.kjnodes.com"
+    ["url3"]="https://rpc.nodejumper.io:443/${PROJECT}${nodejumper}"
+    ["url4"]="https://rpc${nodestake}.${PROJECT}.nodestake.top"
+    ["url5"]="https://${PROJECT}${stakerhouse}-rpc.stakerhouse.com"
+    ["url6"]="https://${PROJECT}${staketown}-rpc.stake-town.com"
+    ["url7"]="https://rpc.${PROJECT}${indonode}.indonode.net"
+    ["url7"]="https://${PROJECT}.rpc.${anode}.anode.team"
+    # Другие RPC-адреса...
+)
+
+echo "Prelist $manual_rpc_list"
+
 
 # Function process_data_rpc_list
 process_data_rpc_list() {
@@ -423,6 +451,7 @@ first_entry=true
 
 for rpc in "${!rpc_list[@]}"; do
     if check_rpc_accessibility "$rpc"; then
+        echo "RPC доступен: $rpc"
         data=$(fetch_data "$rpc/status")
         network=$(echo "$data" | jq -r '.result.node_info.network')
         moniker=$(echo "$data" | jq -r '.result.node_info.moniker')
@@ -443,6 +472,37 @@ for rpc in "${!rpc_list[@]}"; do
 
             json_data+="\"$rpc\": {\"network\": \"$network\", \"moniker\": \"$moniker\", \"tx_index\": \"$tx_index\", \"latest_block_height\": \"$latest_block_height\", \"earliest_block_height\": \"$earliest_block_height\", \"catching_up\": $catching_up, \"voting_power\": \"$voting_power\", \"scan_time\": \"$scan_time\"}"
         fi
+        else
+        echo "RPC недоступен: $rpc"
+    fi
+done
+
+for key in "${!manual_rpc_list[@]}"; do
+    rpc="${manual_rpc_list[$key]}"
+    if check_rpc_accessibility "$rpc"; then
+        echo "RPC доступен: $rpc"
+        data=$(fetch_data "$rpc/status")
+        network=$(echo "$data" | jq -r '.result.node_info.network')
+        moniker=$(echo "$data" | jq -r '.result.node_info.moniker')
+        tx_index=$(echo "$data" | jq -r '.result.node_info.other.tx_index')
+        latest_block_height=$(echo "$data" | jq -r '.result.sync_info.latest_block_height')
+        earliest_block_height=$(echo "$data" | jq -r '.result.sync_info.earliest_block_height')
+        catching_up=$(echo "$data" | jq -r '.result.sync_info.catching_up')
+        voting_power=$(echo "$data" | jq -r '.result.validator_info.voting_power')
+        scan_time=$(date '+%FT%T.%N%Z')
+
+        # Добавление только если catching_up равно false
+        if [ "$catching_up" = "false" ]; then
+            if [ "$first_entry" = false ]; then
+                json_data+=","
+            else
+                first_entry=false
+            fi
+
+            json_data+="\"$rpc\": {\"network\": \"$network\", \"moniker\": \"$moniker\", \"tx_index\": \"$tx_index\", \"latest_block_height\": \"$latest_block_height\", \"earliest_block_height\": \"$earliest_block_height\", \"catching_up\": $catching_up, \"voting_power\": \"$voting_power\", \"scan_time\": \"$scan_time\"}"
+        fi
+        else
+        echo "RPC недоступен: $rpc"
     fi
 done
 
