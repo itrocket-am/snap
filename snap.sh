@@ -346,6 +346,7 @@ if [ "$TYPE" = "testnet" ]; then
     indonode="-t"
     anode="t"
     aknodes=""
+    staketown="-testnet"
   else
     anode="m"
 fi
@@ -364,7 +365,8 @@ manual_rpc_list=(
     ["url6"]="https://${PROJECT}${staketown}-rpc.stake-town.com"
     ["url7"]="https://rpc.${PROJECT}${indonode}.indonode.net"
     ["url8"]="https://${PROJECT}.rpc.${anode}.anode.team"
-    ["url9"]="https://rpc.${PROJECT}.aknodes.net/"
+    ["url9"]="https://rpc.${PROJECT}.aknodes.net"
+    ["url10"]="https://${PROJECT}${staketown}-rpc.stake-town.com"
     # Другие RPC-адреса...
 )
 
