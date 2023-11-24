@@ -104,7 +104,8 @@ echo -e "\033[0;34m"Starting the $i cycle"\033[0m"
 
 # add check_localhost_connection function
 check_localhost_connection() {
-    if curl -s --head localhost:${PORT}657 | head -n 1 | grep "200 OK" > /dev/null; then
+    if curl -s localhost:${PORT}657 | grep -q "height" > /dev/null; then
+        PARENT_NETWORK=$(curl -s "localhost:${PORT}657/status" | jq -r '.result.node_info.network')
         return 0
     else
         return 1
@@ -321,21 +322,21 @@ else
   sleep $SLEEP
 fi
 
-# собираем список доступных rpc
+# Collecting available RPCs
 echo RPC scanner stated...
 # Function fetch_data 
 fetch_data() {
     local url=$1
-    local data=$(curl -s --max-time 2 "$url")
+    local data=$(curl -s --max-time 1 "$url")
     
     if [ $? -ne 0 ]; then
         echo "Error: Failed to fetch data from $url" >&2
         return 1
     fi
     
-    echo "$data"
-    return 0
+    printf "%s" "$data"
 }
+
 
 if [ "$TYPE" = "testnet" ]; then
     kjnodes="-testnet"
@@ -378,13 +379,21 @@ echo "Prelist $manual_rpc_list"
 # Function process_data_rpc_list
 process_data_rpc_list() {
     local data=$1
-    local current_rpc_url=$2 # URL текущего обрабатываемого RPC
+    local current_rpc_url=$2 # current RPC URL
+# echo "Data to be processed: $data" # Временная строка для отладки
 
     if [ -z "$data" ]; then
         echo "Warning: No data to process from $current_rpc_url"
         return 1
     fi
-
+# echo "Raw data received: $data"
+# echo "$data" | jq .
+# echo "$data" | jq empty
+    if [ $? -ne 0 ]; then
+        echo "Error: Invalid JSON data received."
+        return 1
+    fi
+# echo "$data" | jq empty # временная отладка
     local peers=$(echo "$data" | jq -c '.result.peers[]')
     if [ $? -ne 0 ]; then
         echo "Error: Failed to parse JSON data."
@@ -444,10 +453,37 @@ if check_rpc_connection; then
     public_data=$(fetch_data "$RPC/net_info")
     process_data_rpc_list "$public_data" "$PARENT_NETWORK"
     echo "Checking chain_id = $PARENT_NETWORK..."
+else
+    echo "RPC not available, checking localhost connection..."
+    attempt=0
+    max_attempts=5
+    while [ $attempt -lt $max_attempts ]; do
+        if check_localhost_connection; then
+            local_data=$(fetch_data "http://localhost:${PORT}657/net_info")
+            
+# логирование
+local_data=$(fetch_data "http://localhost:${PORT}657/net_info")
+# echo "$local_data" | jq .  # выводим содержимое в формате jq
+
+            process_data_rpc_list "$local_data" "$PARENT_NETWORK"
+            echo "Checking chain_id = $PARENT_NETWORK"
+            break
+        else
+            let "attempt+=1"
+            echo "Attempt $attempt of $max_attempts failed, waiting for 2 minutes before retrying..."
+            sleep 120
+        fi
+    done
+
+    if [ $attempt -eq $max_attempts ]; then
+        echo "Localhost connection failed after $max_attempts attempts, restarting the node..."
+        systemctl restart $SERVICE
+        echo "service restartted, waiting 5 min..."
+        sleep 300
+    fi
 fi
 
 # Creating and populating the rpc_combined.json file
-FILE_PATH_JSON="/home/$PR_USER/snap/rpc_combined.json"
 PUBLIC_FILE_JSON="/var/www/$TYPE-files/$PROJECT/.rpc_combined.json"
 
 # Generate JSON data in memory
@@ -457,7 +493,7 @@ first_entry=true
 
 for rpc in "${!rpc_list[@]}"; do
     if check_rpc_accessibility "$rpc"; then
-        echo "RPC доступен: $rpc"
+        echo -e "\e[32mRPC available $rpc\e[0m"
         data=$(fetch_data "$rpc/status")
         network=$(echo "$data" | jq -r '.result.node_info.network')
         moniker=$(echo "$data" | jq -r '.result.node_info.moniker')
@@ -479,14 +515,14 @@ for rpc in "${!rpc_list[@]}"; do
             json_data+="\"$rpc\": {\"network\": \"$network\", \"moniker\": \"$moniker\", \"tx_index\": \"$tx_index\", \"latest_block_height\": \"$latest_block_height\", \"earliest_block_height\": \"$earliest_block_height\", \"catching_up\": $catching_up, \"voting_power\": \"$voting_power\", \"scan_time\": \"$scan_time\"}"
         fi
         else
-        echo "RPC недоступен: $rpc"
+        echo -e "\e[31mRPC unavailable $rpc\e[0m"
     fi
 done
 
 for key in "${!manual_rpc_list[@]}"; do
     rpc="${manual_rpc_list[$key]}"
     if check_rpc_accessibility "$rpc"; then
-        echo "RPC доступен: $rpc"
+        echo -e "\e[32mRPC available $rpc\e[0m"
         data=$(fetch_data "$rpc/status")
         network=$(echo "$data" | jq -r '.result.node_info.network')
         moniker=$(echo "$data" | jq -r '.result.node_info.moniker')
@@ -508,7 +544,7 @@ for key in "${!manual_rpc_list[@]}"; do
             json_data+="\"$rpc\": {\"network\": \"$network\", \"moniker\": \"$moniker\", \"tx_index\": \"$tx_index\", \"latest_block_height\": \"$latest_block_height\", \"earliest_block_height\": \"$earliest_block_height\", \"catching_up\": $catching_up, \"voting_power\": \"$voting_power\", \"scan_time\": \"$scan_time\"}"
         fi
         else
-        echo "RPC недоступен: $rpc"
+        echo -e "\e[31mRPC unavailable $rpc\e[0m"
     fi
 done
 
@@ -518,15 +554,9 @@ json_data+="}"
 sorted_json=$(echo "$json_data" | jq 'to_entries | sort_by(.value.earliest_block_height | tonumber) | from_entries')
 
 # Write sorted and formatted JSON data to file
-echo "$sorted_json" > "$FILE_PATH_JSON"
-echo "$FILE_PATH_JSON file created"
+echo "$sorted_json" > "$PUBLIC_FILE_JSON"
+echo "$PUBLIC_FILE_JSON file created"
 sleep 2
-
-# Copying the JSON file to a public location
-if ! cp "$FILE_PATH_JSON" "$PUBLIC_FILE_JSON"; then
-    echo "Error: Failed to copy JSON file to public location" >&2
-    exit 1
-fi
 
 # Uncomment the following line if you want to see the file content
 # cat $PUBLIC_FILE_JSON
