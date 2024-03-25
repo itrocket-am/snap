@@ -138,10 +138,10 @@ while true; do
                 echo -e "\033[0;31mNode is not synced, restarting after $SLEEP sec...\033[0m"
                 echo ">>> Height $NODE_HEIGHT/$LATEST_CHAIN_BLOCK"
                 # sending message...
-                MESSAGE="$PROJECT $TYPE SEED
-                >>> ${NODE_HEIGHT}/${LATEST_CHAIN_BLOCK} diff $difference
-                > but service has been restarted"
-                curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
+                #MESSAGE="$PROJECT $TYPE SEED
+                #>>> ${NODE_HEIGHT}/${LATEST_CHAIN_BLOCK} diff $difference
+                #> but service has been restarted"
+                #curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"${CHAT_ID_ALARM}"'", "text":"'"$(echo -e "${MESSAGE}")"'", "parse_mode": "html"}' "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" /dev/null 2>&1
                 echo '---------------------------------------------------------'
                 echo -e "\033[0;31m"$PROJECT is not synched ${NODE_HEIGHT}/${LATEST_CHAIN_BLOCK} but service has been restarted after $SLEEP sec"\033[0m"
                 sleep $SLEEP
