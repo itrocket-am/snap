@@ -48,7 +48,7 @@ sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"10\"/" $NODE_PATH/confi
 # configure config.toml
 sed -i -e "s/^seed_mode *=.*/seed_mode = \"true\"/" $NODE_PATH/config/config.toml
 sed -i -e "s/^indexer *=.*/indexer = \"null\"/" $NODE_PATH/config/config.toml
-sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $NODE_PATH/config/config.toml
+sed -i -e "s/^filter_peers *=.*/filter_peers = \"false\"/" $NODE_PATH/config/config.toml
 sed -i -e "s/^enable *=.*/enable = \"false\"/" $NODE_PATH/config/config.toml
 sed -i -e "s/^rpc_servers *=.*/rpc_servers = \"\"/" $NODE_PATH/config/config.toml
 sed -i -e "s/^trust_hash *=.*/trust_hash = \"\"/" $NODE_PATH/config/config.toml
