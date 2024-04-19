@@ -95,9 +95,9 @@ else
 fi
 
 # start script
-for (( ;; )); do
+#for (( ;; )); do
 # create addrbook cycles
-cycles=3
+#cycles=3
  for i in $(eval echo {1..$cycles})
  do
 echo -e "\033[0;34m"Starting the $i cycle"\033[0m"
@@ -135,7 +135,7 @@ while true; do
             echo ">>> Height $NODE_HEIGHT/$LATEST_CHAIN_BLOCK diff $difference"
             
             while [ $difference -gt 100 ]; do
-                echo -e "\033[0;31mNode is not synced, restarting after $SLEEP sec...\033[0m"
+                echo -e "\033[0;31mNode is not synced, restarting after ${SLEEP}...\033[0m"
                 echo ">>> Height $NODE_HEIGHT/$LATEST_CHAIN_BLOCK"
                 # sending message...
                 #MESSAGE="$PROJECT $TYPE SEED
@@ -169,8 +169,10 @@ while true; do
 done
   echo "Copy and move addrbook to public folder..."
   cp -r $NODE_PATH/config/addrbook.json $PUBLIC_FOLDER
+  echo "Copy and move Validators list to public folder..."
+  sudo -u $PR_USER $BIN q staking validators -oj --limit=2000 | jq '.validators[] | select(.status=="BOND_STATUS_BONDED")' > $PUBLIC_FOLDER/validators.json
   echo '---------------------------------------------------------'
-  echo -e "\033[0;93mAddrbook moved to $PUBLIC_FOLDER\033[0m" && sleep 2
+  echo -e "\033[0;93mAddrbook and Validators list moved to $PUBLIC_FOLDER\033[0m" && sleep 2
 FILE_1=$NODE_PATH/config/genesis.json
 FILE_2=$PUBLIC_FOLDER/genesis.json
 if [ -z "$(diff -q $FILE_1  $FILE_2)" ]; then
@@ -183,6 +185,7 @@ fi
 if [ -d "$WASM_FOLDER" ]; then
     cd $NODE_PATH
     rm $NODE_PATH/wasm_$PROJECT.tar.lz4
+    rm -rf rm $NODE_PATH/wasm/wasm/cache # check
     tar cvf - wasm | lz4 - $NODE_PATH/wasm_$PROJECT.tar.lz4 && cd $NODE_PATH
     mv wasm_$PROJECT.tar.lz4 "/var/www/$TYPE-files/$PROJECT"
     WASM_PATH=$(basename $(pwd))
@@ -194,6 +197,7 @@ if [ -d "$WASM_FOLDER" ]; then
 if [ -d "$WASM_FOLDER" ]; then
     cd $NODE_PATH/data
     rm $NODE_PATH/data/wasm_$PROJECT.tar.lz4
+    rm -rf $NODE_PATH/data/wasm/wasm/cache # check
     tar cvf - wasm | lz4 - $NODE_PATH/data/wasm_$PROJECT.tar.lz4
     mv wasm_$PROJECT.tar.lz4 "/var/www/$TYPE-files/$PROJECT"
     WASM_PATH_1=$(basename $(pwd))
@@ -204,10 +208,10 @@ if [ -d "$WASM_FOLDER" ]; then
     echo "No have wasm on the $PROJECT"
 fi
 fi
-  echo -e "\033[0;32mWaiting $SLEEP sec\033[0m"
+#  echo -e "\033[0;32mWaiting $SLEEP sec\033[0m"
   echo '================================================='
-  sleep $SLEEP
-done
+#  sleep $SLEEP
+#done
 
 # stop the node and create snapshot
 while ! nc -z localhost ${PORT}657; do
@@ -241,8 +245,8 @@ echo '--------------------------------------------------'
 echo -e "\033[0;93mSnapshot created and moved, starting node...\033[0m"
 echo '--------------------------------------------------'
 systemctl start $SERVICE
-echo -e "\033[0;93msleep 1 min...\033[0m"
-sleep 60
+echo -e "\033[0;93msleep 2 min...\033[0m"
+sleep 120
 
 # check file size and start statesync if snap_size biggest
 DATA_FOLDER=$NODE_PATH/data
@@ -279,8 +283,8 @@ done
   s|^(seeds[[:space:]]+=[[:space:]]+).*$|\1\"\"|" $NODE_PATH/config/config.toml
   sudo -u $PR_USER mv $NODE_PATH/priv_validator_state.json.backup $NODE_PATH/data/priv_validator_state.json
   systemctl restart $SERVICE
-echo -e "\033[0;31m"Snapshot size is $DATA_FOLDER_SIZE, StateSync started, waiting $SLEEP sec..."\033[0m"
-sleep $SLEEP
+echo -e "\033[0;31m"Snapshot size is $DATA_FOLDER_SIZE, StateSync started, waiting 20m..."\033[0m"
+sleep 20m
 
 # checking sync status after statesync
 while true; do
@@ -318,8 +322,7 @@ fi
   sed -i -e "s/^trust_height *=.*/trust_height = 0/" $NODE_PATH/config/config.toml
   sed -i -e "s/^persistent_peers *=.*/persistent_peers = \"\"/" $NODE_PATH/config/config.toml
 else
-  echo -e "\033[0;32m"Snapshot size less than $snapMaxSize gb, it is a great! Waiting $SLEEP sec..."\033[0m"
-  sleep $SLEEP
+  echo -e "\033[0;32m"Snapshot size less than $snapMaxSize gb, it is a great!"\033[0m"
 fi
 
 # Collecting available RPCs
@@ -556,7 +559,8 @@ sorted_json=$(echo "$json_data" | jq 'to_entries | sort_by(.value.earliest_block
 # Write sorted and formatted JSON data to file
 echo "$sorted_json" > "$PUBLIC_FILE_JSON"
 echo "$PUBLIC_FILE_JSON file created"
-sleep 2
+  echo -e "\033[0;32m"Script operations complete! Waiting ${SLEEP}..."\033[0m"
+  sleep $SLEEP
 
 # Uncomment the following line if you want to see the file content
 # cat $PUBLIC_FILE_JSON
