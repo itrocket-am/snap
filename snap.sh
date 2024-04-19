@@ -559,8 +559,8 @@ sorted_json=$(echo "$json_data" | jq 'to_entries | sort_by(.value.earliest_block
 # Write sorted and formatted JSON data to file
 echo "$sorted_json" > "$PUBLIC_FILE_JSON"
 echo "$PUBLIC_FILE_JSON file created"
-  echo -e "\033[0;32m"Script operations complete! Waiting ${SLEEP}..."\033[0m"
-  sleep $SLEEP
+  echo -e "\033[0;32m"Script operations complete! Waiting 4h..."\033[0m"
+  sleep 4h
 
 # Uncomment the following line if you want to see the file content
 # cat $PUBLIC_FILE_JSON
