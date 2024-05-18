@@ -169,10 +169,8 @@ while true; do
 done
   echo "Copy and move addrbook to public folder..."
   cp -r $NODE_PATH/config/addrbook.json $PUBLIC_FOLDER
-  echo "Copy and move Validators list to public folder..."
-  sudo -u $PR_USER $BIN q staking validators -oj --limit=2000 --node http://127.0.0.1:${PORT}657 | jq '.validators[] | select(.status=="BOND_STATUS_BONDED")' > $PUBLIC_FOLDER/validators.json
   echo '---------------------------------------------------------'
-  echo -e "\033[0;93mAddrbook and Validators list moved to $PUBLIC_FOLDER\033[0m" && sleep 2
+  echo -e "\033[0;93mAddrbook moved to $PUBLIC_FOLDER\033[0m" && sleep 2
 FILE_1=$NODE_PATH/config/genesis.json
 FILE_2=$PUBLIC_FOLDER/genesis.json
 if [ -z "$(diff -q $FILE_1  $FILE_2)" ]; then
