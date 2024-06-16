@@ -350,6 +350,7 @@ if [ "$TYPE" = "testnet" ]; then
     aknodes=""
     staketown="-testnet"
     cumulo=""
+    nodehub="test."
   else
     anode="m"
 fi
@@ -371,6 +372,7 @@ manual_rpc_list=(
     ["url9"]="https://rpc.${PROJECT}.aknodes.net"
     ["url10"]="https://${PROJECT}${staketown}-rpc.stake-town.com"
     ["url11"]="https://${PROJECT}.rpc.cumulo.org.es"
+    ["url12"]="https://${PROJECT}.${nodehub}rpc.nodeshub.online"
     # Другие RPC-адреса...
 )
 
