@@ -281,7 +281,7 @@ done
   s|^(seeds[[:space:]]+=[[:space:]]+).*$|\1\"\"|" $NODE_PATH/config/config.toml
   sudo -u $PR_USER mv $NODE_PATH/priv_validator_state.json.backup $NODE_PATH/data/priv_validator_state.json
   systemctl restart $SERVICE
-echo -e "\033[0;31m"Snapshot size is $DATA_FOLDER_SIZE, StateSync started, waiting 20m..."\033[0m"
+echo -e "\033[0;31m"Snapshot size is $DATA_FOLDER_SIZE, StateSync started, waiting 60m..."\033[0m"
 sleep 60m
 
 # checking sync status after statesync
