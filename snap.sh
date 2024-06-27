@@ -373,6 +373,7 @@ manual_rpc_list=(
     ["url10"]="https://${PROJECT}${staketown}-rpc.stake-town.com"
     ["url11"]="https://${PROJECT}.rpc.cumulo.org.es"
     ["url12"]="https://${PROJECT}.${nodehub}rpc.nodeshub.online"
+    ["url13"]="https://celestia-rpc.0xcryptovestor.com"
     # Другие RPC-адреса...
 )
 
